@@ -1,0 +1,162 @@
+import heapq
+
+# ---------------- GRAPH OPERATIONS ---------------- #
+
+def add_node(graph, node):
+    if node not in graph:
+        graph[node] = []
+        print(f"Node '{node}' added.")
+    else:
+        print("Node already exists.")
+
+def delete_node(graph, node):
+    if node in graph:
+        graph.pop(node)
+        for n in graph:
+            graph[n] = [(v, c) for v, c in graph[n] if v != node]
+        print(f"Node '{node}' deleted.")
+    else:
+        print("Node not found.")
+
+def add_edge(graph, src, dest, cost):
+    if src in graph and dest in graph:
+        graph[src].append((dest, cost))
+        graph[dest].append((src, cost))  # Undirected graph
+        print(f"Edge {src} <-> {dest} with cost {cost} added.")
+    else:
+        print("Add nodes first.")
+
+def delete_edge(graph, src, dest):
+    if src in graph and dest in graph:
+        graph[src] = [(v, c) for v, c in graph[src] if v != dest]
+        graph[dest] = [(v, c) for v, c in graph[dest] if v != src]
+        print(f"Edge between {src} and {dest} deleted.")
+    else:
+        print("Node not found.")
+
+def display_graph(graph):
+    print("\nCurrent Graph:")
+    for node in graph:
+        edges = ", ".join([f"{v}(cost={c})" for v, c in graph[node]])
+        print(f"{node} -> {edges}")
+    print()
+
+# ---------------- UNIFORM COST SEARCH ---------------- #
+
+def uniform_cost_search(graph, start, goal):
+
+    if start not in graph or goal not in graph:
+        print("Start or Goal node does not exist.")
+        return None, float('inf')
+
+    pq = []
+    heapq.heappush(pq, (0, start, [start]))
+
+    best_cost = {start: 0}
+
+    while pq:
+        cost, node, path = heapq.heappop(pq)
+
+        print(f"Selected Node : {node}")
+        print(f"Path So Far   : {path}")
+        print(f"Cost So Far   : {cost}\n")
+
+        if node == goal:
+            print("GOAL NODE REACHED")
+            return path, cost
+
+        for neighbor, weight in graph[node]:
+            new_cost = cost + weight
+
+            if neighbor not in best_cost or new_cost < best_cost[neighbor]:
+                best_cost[neighbor] = new_cost
+                heapq.heappush(pq, (new_cost, neighbor, path + [neighbor]))
+
+    return None, float('inf')
+
+# ---------------- INPUT GRAPH ---------------- #
+
+def input_graph(graph):
+    graph.clear()
+
+    n = int(input("Enter number of nodes: "))
+    for i in range(n):
+        node = input(f"Enter node {i+1}: ")
+        graph[node] = []
+
+    e = int(input("Enter number of edges: "))
+    for i in range(e):
+        src = input("Enter source node: ")
+        dest = input("Enter destination node: ")
+        cost = int(input("Enter cost: "))
+
+        if src in graph and dest in graph:
+            graph[src].append((dest, cost))
+            graph[dest].append((src, cost))
+        else:
+            print("Invalid nodes, edge skipped.")
+
+# ---------------- MAIN MENU ---------------- #
+
+def main():
+    graph = {}
+
+    while True:
+        print("""
+1. Add Node
+2. Delete Node
+3. Add Edge
+4. Delete Edge
+5. Display Graph
+6. Uniform Cost Search (UCS)
+7. Input Graph
+8. Exit
+""")
+
+        choice = int(input("Enter choice: "))
+
+        if choice == 1:
+            node = input("Enter node: ")
+            add_node(graph, node)
+
+        elif choice == 2:
+            node = input("Enter node: ")
+            delete_node(graph, node)
+
+        elif choice == 3:
+            src = input("Enter source node: ")
+            dest = input("Enter destination node: ")
+            cost = int(input("Enter cost: "))
+            add_edge(graph, src, dest, cost)
+
+        elif choice == 4:
+            src = input("Enter source node: ")
+            dest = input("Enter destination node: ")
+            delete_edge(graph, src, dest)
+
+        elif choice == 5:
+            display_graph(graph)
+
+        elif choice == 6:
+            start = input("Enter start node: ")
+            goal = input("Enter goal node: ")
+            path, cost = uniform_cost_search(graph, start, goal)
+
+            if path:
+                print("\nFINAL RESULT")
+                print("Shortest Path :", path)
+                print("Total Cost    :", cost)
+            else:
+                print("No path found.")
+
+        elif choice == 7:
+            input_graph(graph)
+
+        elif choice == 8:
+            print("Program exited.")
+            break
+
+        else:
+            print("Invalid choice.")
+
+main()
